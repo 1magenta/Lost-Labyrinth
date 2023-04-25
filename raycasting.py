@@ -23,6 +23,9 @@ class RayCasting:
     def renderObject(self):
         pass
 
+    def isValidIndex(self, row, col):
+        return 0 <= row < len(self.maze.maze) and 0 <= col < len(self.maze.maze[0])
+
     def rayCast(self):
         rayAngle = math.radians(self.player.angle) - FOV / 2 + 0.0001
 
@@ -54,7 +57,7 @@ class RayCasting:
             for i in range(MAX_DEPTH):
                 rowIdx, colIdx = int(vertY), int(vertX)
                 grid = self.maze.maze
-                if grid[rowIdx][colIdx] == 0:
+                if self.isValidIndex(rowIdx, colIdx) and grid[rowIdx][colIdx] == 0:
                     break
                 vertX += dX
                 vertY += dY
@@ -68,22 +71,21 @@ class RayCasting:
                 horiY = coorY + 1
                 dY = 1
             else:
-                # if cosA < 0, coorX should substract a small number in order to check the left cell 
                 horiY = coorY - 1e-6
-                dX = -1
+                dY = -1
             horiDepth = (horiY - playerY) / sinA
-            horiX = horiDepth * sinA + playerX
+            horiX = horiDepth * cosA + playerX
 
             dDepth = dY / sinA
             dX = dDepth * cosA
 
             # check if the the ray hits wall, if not extend the ray to check
-            for d in range(MAX_DEPTH):
+            for i in range(MAX_DEPTH):
                 rowIdx, colIdx = int(vertY), int(vertX)
-                print(rowIdx, colIdx)
-                print(grid[rowIdx][colIdx])
+                # print(rowIdx, colIdx)
+                # print(grid[rowIdx][colIdx])
                 grid = self.maze.maze
-                if grid[rowIdx][colIdx] == 0:
+                if self.isValidIndex(rowIdx, colIdx) and grid[rowIdx][colIdx] == 0:
                     break
                 horiX += dX
                 horiY += dY
@@ -96,7 +98,10 @@ class RayCasting:
                 depth = horiDepth         
 
             # test to draw
-            drawLine(playerX, playerY, playerX + depth * cosA, playerY + depth * sinA, lineWidth = 2, fill = 'yellow') 
+            # print(rayAngle, self.player.angle)
+            drawLine(playerX * GRIDSIZE, playerY * GRIDSIZE, 
+                     (playerX + depth * cosA) * GRIDSIZE, 
+                     (playerY + depth * sinA) * GRIDSIZE, lineWidth = 2) 
 
             rayAngle += DANGLE
 
