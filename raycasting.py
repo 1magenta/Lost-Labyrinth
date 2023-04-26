@@ -38,81 +38,87 @@ class RayCasting:
         for ray in range(RAY_NUM):
             sinA, cosA = math.sin(rayAngle), math.cos(rayAngle)
             
+            #########
             # intersect with vertical grids
             # get intersect point postion: vertX, vertY
             if cosA > 0:
                 vertX = coorX + 1
-                dX = 1
+                dX1 = 1
             else:
                 # if cosA < 0, coorX should substract a small number in order to check the left cell 
                 vertX = coorX - 1e-6
-                dX = -1
+                dX1 = -1
             vertDepth = (vertX - playerX) / cosA
             vertY = vertDepth * sinA + playerY
 
-            dDepth = dX / cosA
-            dY = dDepth * sinA
+            dDepth1 = dX1 / cosA
+            dY1 = dDepth1 * sinA
 
+            #########
             # check if the the ray hits wall, if not extend the ray to check
             for i in range(MAX_DEPTH):
                 rowIdx, colIdx = int(vertY), int(vertX)
                 grid = self.maze.maze
                 if self.isValidIndex(rowIdx, colIdx) and grid[rowIdx][colIdx] == 0:
                     break
-                vertX += dX
-                vertY += dY
-                vertDepth += dDepth
+                vertX += dX1
+                vertY += dY1
+                vertDepth += dDepth1
                 # i += 1
             
-
+            #########
             # intersect with horizontal grids
             # get intersect point postion: horiX, horiY
             if sinA > 0:
                 horiY = coorY + 1
-                dY = 1
+                dY2 = 1
             else:
                 horiY = coorY - 1e-6
-                dY = -1
+                dY2 = -1
             horiDepth = (horiY - playerY) / sinA
             horiX = horiDepth * cosA + playerX
 
-            dDepth = dY / sinA
-            dX = dDepth * cosA
+            dDepth2 = dY2 / sinA
+            dX2 = dDepth2 * cosA
 
+            #########
             # check if the the ray hits wall, if not extend the ray to check
-            for i in range(MAX_DEPTH):
-                rowIdx, colIdx = int(vertY), int(vertX)
+            for j in range(MAX_DEPTH):
+                rowIdx, colIdx = int(horiY), int(horiX)
                 # print(rowIdx, colIdx)
                 # print(grid[rowIdx][colIdx])
                 grid = self.maze.maze
                 if self.isValidIndex(rowIdx, colIdx) and grid[rowIdx][colIdx] == 0:
                     break
-                horiX += dX
-                horiY += dY
-                vertDepth += dDepth
+                horiX += dX2
+                horiY += dY2
+                horiDepth += dDepth2
                 # i += 1  
 
-            if vertDepth < horiDepth:
+            ## get the right depth, and remove the fishbowl effect   
+            if vertDepth <= horiDepth:
                 depth = vertDepth
             else:
-                depth = horiDepth         
+                depth = horiDepth  
+            depth *= math.cos(math.radians(self.player.angle) - rayAngle) 
 
-            # test to draw
-            # print(rayAngle, self.player.angle)
-            drawLine(playerX * GRIDSIZE, playerY * GRIDSIZE, 
-                     (playerX + depth * cosA) * GRIDSIZE, 
-                     (playerY + depth * sinA) * GRIDSIZE, lineWidth = 2) 
+            # test to draw, it is a 2D version 
+            # drawLine(playerX * GRIDSIZE, playerY * GRIDSIZE, 
+            #          (playerX + depth * cosA) * GRIDSIZE, 
+            #          (playerY + depth * sinA) * GRIDSIZE, lineWidth = 2) 
+            
+            #########
+            # get projection to visulize in 3D
+            projHeight = SDIST / (depth + 0.0001)
+
+            # draw wall
+            gradColor = 255 / (1 + depth ** 6 * 0.001)
+            drawRect(ray * SCALE, HEIGHT // 2 - projHeight // 2, SCALE, projHeight, 
+                     fill = rgb(gradColor, gradColor, gradColor))
 
             rayAngle += DANGLE
 
 
-
-        
-        
-        
-        
-        
-        
         
         
         
@@ -187,6 +193,7 @@ class RayCasting:
         #         offset = 1 - horiX
         #     else:
         #         offset = horiX
+        
         # #remove fishbowl effect by multiplying the depth by the cosine of the 
         # #difference between the player's angle and the ray angle
         # depth *= math.cos(self.game.player.angle - rayAngle)
