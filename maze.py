@@ -1,6 +1,6 @@
 from cmu_graphics import *
 import random
-from helper import *
+from settings import *
 ################################################################################
 # class Maze is for defining and drawing maze
 # the maze(simple version) is consisted of path and wall
@@ -20,114 +20,62 @@ class Maze:
         #difficulty input should be int from 1 to 5
         # self.size = size
         self.difficulty = difficulty
-        self.rows = self.difficulty * 4 + 1
-        self.cols = self.difficulty * 4 + 1
-        self.tile = 50
-        # self.maze = [[0]*self.rows for i in range(self.cols)]
+        self.rows = self.difficulty * 2 + 3
+        self.cols = self.difficulty * 2 + 3
+        self.cellSize = GRIDSIZE
+        self.maze = [[0]*self.cols for i in range(self.rows)]
+        self.worldMap = {}
+        # self.entrance = None
+        # self.exit = None
+        # store the rowIdx and colIdx of entrance/exit as a tuple
+        self.entrance = (0, 1) 
+        self.exit = (self.rows - 1, self.cols - 2) 
 
-        self.grid = [mazeGrid(x + 2, y + 2, self.tile) for y in range(self.rows) for x in range(self.cols)]
-        
-        self.entrance = None
-        self.exit = None
-        # self.board = Maze.defaultMaze
-        # maze border
-        # for i in range(self.rows):
-        #     self.maze[i][0] = self.maze[i][self.rows - 1] = 0
-        # for j in range(self.cols):
-        #     self.maze[0][j] = self.maze[self.cols - 1][j] = 0
+        # # initialize the top and bottom border
+        # for i in range (self.cols):
+        #     self.maze[0][i] = self.maze[self.rows -1][i] = 0
+        # # initialize the left and right border
+        # for j in range(self.rows):
+        #     self.maze[j][0] = self.maze[j][self.cols -1] = 0
+
         
 
     def generate(self):
+        # while True:
         # maze generation algorithm Depth-First Search
+        def dfs(x, y):
+                dir = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+                random.shuffle(dir)
 
-        def isSolution(gridCells, currCell):
-            currCell.visited = True
-            nextCell = currCell.isNeighborLegal(gridCells)
+                for dx, dy in dir:
+                    nx = x + 2 * dx
+                    ny = y + 2 * dy
+                    if (0 <= nx < self.rows 
+                        and 0 <= ny < self.cols 
+                        and self.maze[nx][ny] == 0):
 
-            while neigborCell:
-                getPath(currCell, nextCell)
-                isSolution(self.grid, currCell)
-                neigborCell = currCell.isNeighborLegal(self.grid)
-    
-        def getPath(curr, next):
-            dx = curr.x - next.x
-            dy = curr.y - next.y
-            if dx == 1:
-                curr.wall['left'] = False
-                next.wall['right'] = False
-            elif dx == -1:
-                curr.wall['right'] = False
-                next.wall['left'] = False    
-            elif dy == 1:
-                curr.wall['up'] = False
-                next.wall['down'] = False                               
-            elif dy == -1:
-                curr.wall['down'] = False
-                next.wall['up'] = False    
+                        self.maze[x + dx][y + dy] = 1
+                        self.maze[nx][ny] = 1
+                        dfs(nx, ny)
         
-        curr = self.grid[0]
-        visitedCell = []
-
-        # if next:
-        #     next.visited = True
-        #     visitedCell.append(curr)
-        #     getPath(curr, next)
-        #     curr = next
-        # elif len(visitedCell) != 0:
-        #     curr = visitedCell.pop()
+        # generate maze
+        startX = random.randrange(1, self.rows, 2)
+        startY = random.randrange(1, self.cols, 2)
+        self.maze[startX][startY] = 1
+        dfs(startX, startY)
         
-        # return self.grid
-        count = 1
+        #define entrance and exit as path, 0 is wall, 1 is path 
+        self.maze[0][1] = 1
+        self.maze[self.rows - 1][self.cols - 2] = 1
+        #set entrance and exit
+        # self.entrance = (1, 0) 
+        # self.exit = (self.rows - 2, self.cols - 1) 
 
-        while len(self.grid) != count:
-            curr.visited = True
-            next = curr.isNeighborLegal(self.grid)
-            if next:
-                next.visited = True
-                count += 1
-                visitedCell.append(curr)
-                getPath(curr, next)
-                curr = next
-            elif visitedCell:
-                curr = visitedCell.pop()
-        return self.grid
+        #check if there is a legal path from entrance to exit
+        # if self.findPath(self.entrance, self.exit):
+        #     break
 
-
-        
-
-    
-    
-
-
-    #         def dfs(x, y):
-    #                 dir = [(0, 1), (1, 0), (0, -1), (-1, 0)]
-    #                 random.shuffle(dir)
-
-    #                 for dx, dy in dir:
-    #                     nx = x + 2 * dx
-    #                     ny = y + 2 * dy
-    #                     if (0 <= nx < self.rows 
-    #                         and 0 <= ny < self.cols 
-    #                         and self.maze[nx][ny] == 0):
-
-    #                         self.maze[x + dx][y + dy] = 1
-    #                         self.maze[nx][ny] = 1
-    #                         dfs(nx, ny)
-            
-    #         # generate maze
-    #         startX = random.randrange(1, self.rows, 2)
-    #         startY = random.randrange(1, self.cols, 2)
-    #         self.maze[startX][startY] = 1
-    #         dfs(startX, startY)
-    #         #set entrance and exit
-    #         self.entrance = (1, 1) 
-    #         self.exit = (self.rows - 2, self.cols - 2) 
-
-    #         #check if there is a legal path from entrance to exit
-    #         if self.findPath(self.entrance, self.exit):
-    #             break
-
-    # # findPath not finish, comment the entire check legal part to test the rest
+    #findPath not finish, comment the entire check legal part to test the rest
     # def findPath(self, start, end):
     #     def heuristic(a, b):
     #         return abs(a[0] - b[0]) + abs(a[1] - b[1])
@@ -163,8 +111,8 @@ class Maze:
     #                     gScore[neighbor] = score
     #                     fScore[neighbor] = score + heuristic(neighbor, end)
     #                     openSet.append((neighbor, fScore[neighbor]))
-    #     return None 
 
+    #     return None 
 
     def isWall(self,x,y):
         if 0 <= x < self.rows and 0 <= y < self.cols:
@@ -191,42 +139,49 @@ class Maze:
         return (isinstance(other, Maze) and
                 self._ == other._)
     
+    def getMap(self):
+        for j, row in enumerate(self.mini_map):
+            for i, value in enumerate(row):
+                if value:
+                    self.worldMap[(i, j)] = value
+
+
 
     def draw(self):
-        for row in self.maze:
-            for cell in row:
-                if cell == 0:
-                    print('#', end = ' ')
-                else:
-                    print(' ', end = ' ')
-            print()
+        rows = self.rows
+        cols = self.cols
+        for rowIdx in range(rows):
+            for colIdx in range(cols):
+                leftTopX = colIdx * self.cellSize
+                leftTopY = rowIdx * self.cellSize
+                if self.entrance == (rowIdx, colIdx):
+                    drawLabel("Start", leftTopX + self.cellSize/2, leftTopY + self.cellSize/2)
+                elif self.exit == (rowIdx, colIdx):
+                    drawLabel("Exit", leftTopX + self.cellSize/2, leftTopY + self.cellSize/2)
 
-# test = Maze(3)
-# test.generate()
-# test.draw()
+                # 0 is wall, 1 is path 
+                elif self.maze[rowIdx][colIdx] == 0:
+                    # xPosi = colIdx * self.cellSize
+                    # yPosi = rowIdx * self.cellSize
+                    drawRect(leftTopX, leftTopY, self.cellSize, self.cellSize, fill = 'grey') 
+
 
 def onAppStart(app):
-    app.width = 1000
-    app.height = 800
-    # app.tile = 50
-    # app.cols= (app.width - 200) // app.tile
-    # app.rows = (app.height - 200) // app.tile
-    # app.m1 = mazeGrid(2,2)
-    # startPX = (app.width/2 - app.cols * app.tile/2)
-    # startPY = app.height/2 - app.rows * app.tile/2
-    app.maze = Maze(3)
-    # app.grid = [mazeGrid(x + 2, y + 2, app.tile) for y in range(app.rows) for x in range(app.cols)]
+    app.width = WIDTH
+    app.height = HEIGHT
+    app.difficulty = 4
+    app.maze = Maze(app.difficulty)
+    # app.player = _
+    # app.map = miniMap
+
 
 def redrawAll(app): 
-    # myMaze = Maze(3)
     app.maze.generate()
-    # for item in app.grid:
-    #     item.draw()
-        
+    app.maze.draw()
 
 
-def main():
-    runApp()
+# def main():
+#     runApp()
 
-# if __name__ == '__main__':
-main()
+# # if __name__ == '__main__':
+# main()
