@@ -1,6 +1,78 @@
+import numpy as np
+from cmu_graphics import *
+from matplotlib import pyplot as plt
+from maze import *
+from player import *
+from raycasting import *
+from settings import *
 
 
-def mian():
-    print("hello world!")
-    print("new line")
-    
+
+class Game:
+    def __init__(self):
+        self.width = 1000
+        self.height = 800
+        self.difficulty = 4
+        self
+        self.maze = Maze(self.difficulty)
+        self.player = Player(self.maze)
+        self.raycasting = RayCasting(self.maze, self.player)
+
+
+
+def onAppStart(app):
+    app.width = WIDTH
+    app.height = HEIGHT
+    app.difficulty = 3
+    app.maze = Maze(app.difficulty)
+    app.maze.generate()
+    # app.game = Game()
+
+    app.player = Player(app.maze)
+
+    app.raycasting = RayCasting(app.maze, app.player)
+    app.perspMode = True
+    app.axonMode = False
+    app.mode2D = False
+
+def onKeyPress(app, key):
+    if app.perspMode:
+        if key == 'right':
+            app.player.turnRight()
+        if key == 'left':
+            app.player.turnLeft()
+        if key == 'up':
+            app.player.moveForward()
+        if key == 'down':
+            app.player.moveBackward()
+    # if app.mode2D:
+    #     if key == 'right':
+    #         app.maze.goRight()
+    #     if key == 'left':
+    #         app.maze.goLeft()
+    #     if key == 'up':
+    #         app.maze.goUp()
+    #     if key == 'down':
+    #         app.maze.goDown()
+
+def generateMaze():
+    pass
+
+def redrawAll(app):
+    drawRect(0, 0, app.width, app.height, fill = 'black')
+    app.maze.generate()
+    app.maze.draw()
+    app.player.draw()
+    app.raycasting.rayCast()
+    # app.raycasting.render()
+    # app.raycasting.rayCast()
+    # app.raycasting.draw()
+
+
+
+def main():
+    runApp()
+
+# if __name__ == '__main__':
+main()
+   
