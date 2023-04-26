@@ -67,52 +67,6 @@ class Maze:
         #define entrance and exit as path, 0 is wall, 1 is path 
         self.maze[0][1] = 1
         self.maze[self.rows - 1][self.cols - 2] = 1
-        #set entrance and exit
-        # self.entrance = (1, 0) 
-        # self.exit = (self.rows - 2, self.cols - 1) 
-
-        #check if there is a legal path from entrance to exit
-        # if self.findPath(self.entrance, self.exit):
-        #     break
-
-    #findPath not finish, comment the entire check legal part to test the rest
-    # def findPath(self, start, end):
-    #     def heuristic(a, b):
-    #         return abs(a[0] - b[0]) + abs(a[1] - b[1])
-
-    #     def reconstructPath(prev, curr):
-    #         path = [curr]
-    #         while curr in prev:
-    #             curr = prev[curr]
-    #             path.append(curr)
-    #         return path[::-1]
-
-    #     openSet = [(heuristic(start, end), start)]
-    #     prev = {}
-    #     gScore = {start: 0}
-    #     fScore = {start: heuristic(start, end)}
-
-    #     while openSet:
-    #         curr = min(openSet, key=lambda x: x[1])[0]
-    #         openSet.remove((curr, fScore[curr]))
-
-    #         if curr == end:
-    #             return reconstructPath(prev, curr)
-
-    #         for dx, dy in [(0, 1), (1, 0), (0, -1), (-1, 0)]:
-    #             neighbor = curr[0] + dx, curr[1] + dy
-    #             if (0 <= neighbor[0] < self.width and 
-    #                 0 <= neighbor[1] < self.height and 
-    #                 self.maze[neighbor[0]][neighbor[1]] == 1):
-
-    #                 score= gScore[curr] + 1
-    #                 if score < gScore.get(neighbor, float('inf')):
-    #                     prev[neighbor] = curr
-    #                     gScore[neighbor] = score
-    #                     fScore[neighbor] = score + heuristic(neighbor, end)
-    #                     openSet.append((neighbor, fScore[neighbor]))
-
-    #     return None 
 
     def isWall(self,x,y):
         if 0 <= x < self.rows and 0 <= y < self.cols:
@@ -152,12 +106,14 @@ class Maze:
         cols = self.cols
         for rowIdx in range(rows):
             for colIdx in range(cols):
-                leftTopX = colIdx * self.cellSize
-                leftTopY = rowIdx * self.cellSize
+                leftTopX = colIdx * self.cellSize + WIDTH / 2 - self.cols * self.cellSize / 2
+                leftTopY = rowIdx * self.cellSize + HEIGHT / 2 - self.rows * self.cellSize / 2
                 if self.entrance == (rowIdx, colIdx):
-                    drawLabel("Start", leftTopX + self.cellSize/2, leftTopY + self.cellSize/2)
+                    drawLabel("Start", leftTopX + self.cellSize/2, leftTopY + self.cellSize/2, 
+                              fill = 'white', bold = True)
                 elif self.exit == (rowIdx, colIdx):
-                    drawLabel("Exit", leftTopX + self.cellSize/2, leftTopY + self.cellSize/2)
+                    drawLabel("Exit", leftTopX + self.cellSize/2, leftTopY + self.cellSize/2,
+                              fill = 'white', bold = True)
 
                 # 0 is wall, 1 is path 
                 elif self.maze[rowIdx][colIdx] == 0:

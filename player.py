@@ -30,13 +30,10 @@ class Player:
             self.x, self.y = newX, newY
 
 
-    def moveBackward(self): #call this method by keyboard input
-        print(self.x, self.y)
-        print(1, self.legalMove)                         
+    def moveBackward(self): #call this method by keyboard input                        
         newX = self.x - self.step * math.cos(math.radians(self.angle))
         newY = self.y - self.step * math.sin(math.radians(self.angle))
         self.checkCollision(newX, newY)
-        # print(2, self.legalMove)  
         if self.legalMove:
             self.x, self.y = newX, newY
 
@@ -83,9 +80,10 @@ class Player:
     
     def draw(self):
         width = self.mazeWidth - self.y
-        playerX = self.x * GRIDSIZE
-        playerY = self.y * GRIDSIZE
+        playerX = self.x * GRIDSIZE + WIDTH / 2 - self.maze.cols * GRIDSIZE / 2
+        playerY = self.y * GRIDSIZE + HEIGHT / 2 - self.maze.rows * GRIDSIZE / 2
         drawCircle(playerX, playerY, 5, fill = 'red')
+        ## test draw, show the player angle
         # drawLine(playerX, playerY, playerX + width * math.cos(math.radians(self.angle)), 
         #          playerY + width * math.sin(math.radians(self.angle)), fill = 'yellow')
 

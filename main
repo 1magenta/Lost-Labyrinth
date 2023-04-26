@@ -23,7 +23,11 @@ class Game:
 def onAppStart(app):
     app.width = WIDTH
     app.height = HEIGHT
-    app.difficulty = 3
+    resetApp(app)
+
+
+def resetApp(app):
+    app.difficulty = 6
     app.maze = Maze(app.difficulty)
     app.maze.generate()
     # app.game = Game()
@@ -31,12 +35,29 @@ def onAppStart(app):
     app.player = Player(app.maze)
 
     app.raycasting = RayCasting(app.maze, app.player)
+
+    ## variable for timer
+    app.stepsPersecond = 1
+
+    app.enterGame = False
+    app.gamePause = True
     app.perspMode = True
     app.axonMode = False
     app.mode2D = False
+    # app.win = app.player.win = False
+
+
+def nextLevel(app):
+    if app.win == True:
+        app.gamePause = True
+        if app.difficulty < 6:
+             app.difficulty  += 1
+             app.win = False
+
+
 
 def onKeyPress(app, key):
-    if app.perspMode:
+    if not app.gamePause:
         if key == 'right':
             app.player.turnRight()
         if key == 'left':
@@ -45,6 +66,9 @@ def onKeyPress(app, key):
             app.player.moveForward()
         if key == 'down':
             app.player.moveBackward()
+    
+    # if app.win:
+    #     if key == 
     # if app.mode2D:
     #     if key == 'right':
     #         app.maze.goRight()
@@ -58,15 +82,47 @@ def onKeyPress(app, key):
 def generateMaze():
     pass
 
+
+
+
+
+
+#############################
+# draw everything on canvas
+
+def drawStartScreen(app):
+    # logo = [[0,0,0,0,0],
+    #         [1,0,0,1],
+    #         [1,0,1,1],
+    #         [1,1,1,1]]
+    logoMaze = Maze(1)
+    logoMaze.generate()
+    logo3D = RayCasting(app.maze, app.player)
+    logo3D.rayCast()
+    drawRect(WIDTH/2 - 190, HEIGHT/2 -190, 380, 380, border = 'black', borderWidth = 4, fill = 'white')
+    logoMaze.draw()
+    
+    drawLabel('Lost Labyrinth', WIDTH/2, HEIGHT/2 - 250, font= 'monospace', size = 50, bold = True)
+    startButtonCX, startButtonCY  = WIDTH/2, HEIGHT/2 + 250
+    # startButtonW, startButtonH = 200, 50
+    drawRect(startButtonCX - 190, startButtonCY - 35, 380, 70, fill = 'black')
+    drawLabel('Press space to start', startButtonCX, startButtonCY, size = 30, fill = 'white')
+
+
 def redrawAll(app):
-    drawRect(0, 0, app.width, app.height, fill = 'black')
-    app.maze.generate()
-    app.maze.draw()
-    app.player.draw()
-    app.raycasting.rayCast()
-    # app.raycasting.render()
-    # app.raycasting.rayCast()
-    # app.raycasting.draw()
+    if not app.enterGame:
+        # drawRect(0, 0, app.width, app.height, fill = 'black')
+        drawStartScreen(app)
+        
+        
+    else:
+        drawRect(0, 0, app.width, app.height, fill = 'black')
+        app.maze.draw()
+        app.player.draw()
+        app.raycasting.rayCast()
+        # app.raycasting.render()
+        # app.raycasting.rayCast()
+        # app.raycasting.draw()
 
 
 
