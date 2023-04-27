@@ -1,104 +1,180 @@
-import numpy as np
 from cmu_graphics import *
-from matplotlib import pyplot as plt
 from maze import *
 from player import *
 from raycasting import *
 from settings import *
 
-
-
-class Game:
-    def __init__(self):
-        self.width = 1000
-        self.height = 800
-        self.difficulty = 4
-        self
-        self.maze = Maze(self.difficulty)
-        self.player = Player(self.maze)
-        self.raycasting = RayCasting(self.maze, self.player)
-
+################################################################################
+# run this file to play the 3D maze game
+# autor: Yvie Zhang
+# andrew ID: yingz5
+# course: 15112, 23 Spring
+# project name: Lost Labyrinth
+# introductino of Lost Labyrinth:
+################################################################################
 
 
 def onAppStart(app):
     app.width = WIDTH
     app.height = HEIGHT
+    app.enterGame = False
+    app.difficulty = 1
+
+    app.introButtonX, app.introButtonY = 150, 60
+    app.exitButtonX, app.exitButtonY = 60, 60
+    app.buttonR = 25
+    app.stepsPerSecond = 1
     resetApp(app)
 
 
 def resetApp(app):
-    app.difficulty = 6
+    
     app.maze = Maze(app.difficulty)
     app.maze.generate()
-    # app.game = Game()
 
     app.player = Player(app.maze)
-
+    app.score = app.player.score
+    
     app.raycasting = RayCasting(app.maze, app.player)
+    
+    app.timer = 0
 
-    ## variable for timer
-    app.stepsPersecond = 1
+    app.show2D = False
+    app.win = False
+    app.showIntro = False
 
-    app.enterGame = False
-    app.gamePause = True
-    app.perspMode = True
-    app.axonMode = False
-    app.mode2D = False
-    # app.win = app.player.win = False
 
+def yourScore(app):
+    if app.player.calScore():
+        app.score += app.player.calScore()
 
 def nextLevel(app):
-    if app.win == True:
-        app.gamePause = True
-        if app.difficulty < 6:
-             app.difficulty  += 1
-             app.win = False
+    app.player.youWin()
+    app.win = app.player.win
 
+def distance(x0, y0, x1, y1):
+    dist = ((x1 - x0)**2 + (y1 - y0)**2)**0.5
+    return dist
 
+def onMousePress(app, x, y):
+
+    # click on instruction button, exit button
+    distToIntro = distance(x, y, app.introButtonX, app.introButtonY)
+    distToExit = distance(x, y, app.exitButtonX, app.exitButtonY)
+    if distToIntro <= app.buttonR:
+         app.showIntro = not app.showIntro
+    if distToExit <= app.buttonR:
+        app.enterGame = False
+        app.difficulty = 1
+        resetApp(app)        
 
 def onKeyPress(app, key):
-    if not app.gamePause:
+    if key == 'f':   # to refresh the maze
+        resetApp(app)
+    
+    if key == 'escape':  # to go back to startScreen
+        app.enterGame = False
+        app.difficulty = 1
+        resetApp(app)
+
+    if app.enterGame == False and key == 'space':
+        app.enterGame = True
+
+    elif app.enterGame and not app.win:
         if key == 'right':
             app.player.turnRight()
         if key == 'left':
             app.player.turnLeft()
         if key == 'up':
             app.player.moveForward()
+            nextLevel(app)
+            yourScore(app)
         if key == 'down':
             app.player.moveBackward()
+            nextLevel(app)
+        if key == 'space':
+            app.show2D = True
     
-    # if app.win:
-    #     if key == 
-    # if app.mode2D:
-    #     if key == 'right':
-    #         app.maze.goRight()
-    #     if key == 'left':
-    #         app.maze.goLeft()
-    #     if key == 'up':
-    #         app.maze.goUp()
-    #     if key == 'down':
-    #         app.maze.goDown()
+    elif app.enterGame and app.win:
+        if key == 'enter':
+            if app.difficulty < MAX_LEVELS:
+                app.difficulty  += 1
+                resetApp(app)
+                yourScore(app)
+                app.timer = 0
 
-def generateMaze():
-    pass
+def onKeyRelease(app, key):
+    if app.enterGame and not app.win and key == 'space':
+        app.show2D = False
 
-
-
-
+def onStep(app):
+    if not app.win and app.enterGame:
+        app.timer += 1
+        if app.show2D:
+            app.score -= 3
 
 
 #############################
 # draw everything on canvas
 
+def drawIntroScreen(app):
+    drawLabel('Introduction', WIDTH/2, HEIGHT/2 - 320, size = 40, bold = True)
+    introText = '''Lost Labyrinth provides amzaing mazes,\n 
+                   you can hold "SPACE" key to switch the \n
+                   first person perspective to a classic \n
+                   2D version maze. The default version is\n
+                   3D mode, press "SPACE" to get started!\n
+                   Then, you can use the "UP ARROW" to move\n
+                   forward, "DOWN ARROW" to move backward,\n
+                   "LEFT ARROW" and "RIGHT ARROW" to turn \n
+                   left and right.\n
+                   \n
+                   You can always click on the "?" button \n
+                   to come here for instruction. Anytime you\n
+                   want to exit the game, just click the \n
+                   "Esc" or press "ESC" on your keyboard.\n
+                   \n
+                   Enjoy your Lost Labyrinth journey!
+                   '''    
+    leftX = 100
+    leftY = 230
+
+    drawRect(leftX, leftY, 70, 70, border = 'black', fill = 'white', borderWidth = 4)
+    drawLabel('ESC', leftX + 35, leftY + 35, size = 18, bold = True, fill = 'black')
+    drawLabel('Press ESC, you can exit the game whenever you want', 
+              leftX + 600, leftY + 35, size = 20, fill = 'black')
+
+    drawRect(leftX + 80, leftY + 120, 70, 70, border = 'black', fill = 'white', borderWidth = 4)
+    drawLabel('UP', leftX + 115, leftY + 155, size = 18, bold = True, fill = 'black')
+    drawLabel('Press UP / DOWN ARROW, you can move forward or backward', 
+        leftX + 600, leftY + 155, size = 20, fill = 'black')
+
+    drawRect(leftX + 80, leftY + 200, 70, 70, border = 'black', fill = 'white', borderWidth = 4)
+    drawLabel('DOWN', leftX + 115, leftY + 235, size = 18, bold = True, fill = 'black')
+    
+
+    drawRect(leftX, leftY + 200, 70, 70, border = 'black', fill = 'white', borderWidth = 4)
+    drawLabel('LEFT', leftX + 35, leftY + 235, size = 18, bold = True, fill = 'black')
+
+    drawRect(leftX + 160, leftY + 200, 70, 70, border = 'black', fill = 'white', borderWidth = 4)
+    drawLabel('RIGHT', leftX + 195, leftY + 235, size = 18, bold = True, fill = 'black')
+    drawLabel('Press LEFT / RIGHT ARROW, you can turn left or turn right', 
+    leftX + 600, leftY + 235, size = 20, fill = 'black')
+    
+    drawRect(leftX, leftY + 400, 300, 70, border = 'black', fill = 'white', borderWidth = 4)
+    drawLabel('SPACE', leftX + 150, leftY + 435, size = 18, bold = True, fill = 'black')
+    drawLabel('Hold SPACE at gameScreen, you can view 2D maze', 
+    leftX + 600, leftY + 410, size = 20, fill = 'black')
+    drawLabel('Press SPACE at startScreen, you can start the game', 
+    leftX + 600, leftY + 460, size = 20, fill = 'black')
+
+
 def drawStartScreen(app):
-    # logo = [[0,0,0,0,0],
-    #         [1,0,0,1],
-    #         [1,0,1,1],
-    #         [1,1,1,1]]
+
     logoMaze = Maze(1)
     logoMaze.generate()
-    logo3D = RayCasting(app.maze, app.player)
-    logo3D.rayCast()
+    logo3D = RayCasting(logoMaze, Player(logoMaze))
+    logo3D.draw3D()
     drawRect(WIDTH/2 - 190, HEIGHT/2 -190, 380, 380, border = 'black', borderWidth = 4, fill = 'white')
     logoMaze.draw()
     
@@ -108,21 +184,79 @@ def drawStartScreen(app):
     drawRect(startButtonCX - 190, startButtonCY - 35, 380, 70, fill = 'black')
     drawLabel('Press space to start', startButtonCX, startButtonCY, size = 30, fill = 'white')
 
+def drawInGameScreen3D(app):
+    drawRect(0, 0, app.width, app.height, fill = 'black')
+
+    drawCircle(WIDTH/2 - 50, HEIGHT/2 - 140, 40, fill = 'lightgreen')
+    drawCircle(WIDTH/2 - 50, HEIGHT/2 - 60, 60, fill = 'lightgreen')
+    drawLine(WIDTH/2 - 50, HEIGHT/2, WIDTH/2 - 50, HEIGHT/2 + 75, fill = 'lightgrey', lineWidth = 5)
+    app.raycasting.draw3D()    
+
+def drawInGameScreen2D(app):
+    drawRect(0, 0, app.width, app.height, fill = 'black')
+    app.maze.draw()
+    app.player.draw()
+    app.raycasting.draw2D()   
+
 
 def redrawAll(app):
-    if not app.enterGame:
-        # drawRect(0, 0, app.width, app.height, fill = 'black')
-        drawStartScreen(app)
-        
-        
+    if app.showIntro:
+        drawIntroScreen(app)
     else:
-        drawRect(0, 0, app.width, app.height, fill = 'black')
-        app.maze.draw()
-        app.player.draw()
-        app.raycasting.rayCast()
-        # app.raycasting.render()
-        # app.raycasting.rayCast()
-        # app.raycasting.draw()
+        if not app.enterGame:
+            drawStartScreen(app)
+        else:
+            if app.show2D:
+                drawInGameScreen2D(app)
+            else:
+                drawInGameScreen3D(app) 
+    
+            # current level box
+            drawRect( WIDTH - 235, 35, 200, 50, border = 'grey', borderWidth = 4, fill = 'white')
+            drawLabel(f'Current Level:  {app.difficulty}', WIDTH - 135, 60, size = 18, fill = 'grey', bold = True)
+            # restart current level box
+            drawRect(WIDTH - 235, 100, 200, 50, border = 'grey', borderWidth = 4, fill = 'white')
+            drawLabel(f'Press f, restart level', WIDTH - 135, 125, size = 18, 
+                      fill = 'grey', bold = True)   
+            # score box
+            drawRect(WIDTH/2 - 310, 35, 250, 50, border = 'grey', borderWidth = 4, fill = 'white')
+            drawLabel(f'Score: {app.score}', WIDTH / 2 -185, 60, size = 35, 
+                      fill = 'grey', bold = True)     
+            # timer box
+            drawRect(WIDTH/2 - 10, 35, 250, 50, border = 'grey', borderWidth = 4, fill = 'white')
+            drawLabel(f'time: {app.timer}', WIDTH / 2 + 115 , 60, size = 35, 
+                      fill = 'grey', bold = True)            
+
+            if app.win:
+                if app.difficulty < MAX_LEVELS:
+                    drawRect(WIDTH/2 - 300, HEIGHT/2 - 150, 600, 300, fill = 'white', 
+                            border = 'red', borderWidth = 6)
+                    drawLabel('You Win!', WIDTH/2, HEIGHT/2, size = 80, fill = 'red')
+                    startButtonCX, startButtonCY  = WIDTH/2, HEIGHT/2 + 250
+                    drawRect(startButtonCX - 190, startButtonCY - 35, 380, 70, fill = 'white', 
+                            border = 'grey', borderWidth = 6)
+                    drawLabel('Next Level Press Enter', startButtonCX, startButtonCY, 
+                              size = 30, fill = 'grey')
+                else:
+                    drawRect(WIDTH/2 - 300, HEIGHT/2 - 150, 600, 300, fill = 'white', 
+                            border = 'red', borderWidth = 6)
+                    drawLabel('Pass All Mazes!', WIDTH/2, HEIGHT/2, size = 80, fill = 'red')
+                    startButtonCX, startButtonCY  = WIDTH/2, HEIGHT/2 + 250
+                    drawRect(startButtonCX - 190, startButtonCY - 35, 380, 70, fill = 'white', 
+                            border = 'grey', borderWidth = 6)
+                    drawLabel('Press Esc to Exit', startButtonCX, startButtonCY, size = 30, fill = 'grey')
+                 
+
+            
+    
+    # instruction box
+    drawCircle(app.introButtonX, app.introButtonY, app.buttonR, border = 'grey', 
+               borderWidth = 4, fill = 'white')
+    drawLabel('?', app.introButtonX, app.introButtonY, size = 35, fill = 'grey', bold = True)
+    # Exit game box
+    drawCircle(app.exitButtonX, app.exitButtonY, app.buttonR, border = 'grey', 
+               borderWidth = 4, fill = 'white')
+    drawLabel('Esc', app.exitButtonX, app.exitButtonY, size = 18, fill = 'grey', bold = True)
 
 
 

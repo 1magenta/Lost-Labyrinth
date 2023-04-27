@@ -3,18 +3,11 @@ import random
 from settings import *
 ################################################################################
 # class Maze is for defining and drawing maze
-# the maze(simple version) is consisted of path and wall
-# reference: https://github.com/sbhotika/15112-term-project/blob/master/Maze.py
+# use depth first search to generate maze
 # reference: https://en.wikipedia.org/wiki/A*_search_algorithm
 ################################################################################
 
 class Maze:
-    # def defaultMaze(difficulty,value = None):
-    #     deMaze = []
-    #     for row in range(difficulty * 4):
-    #         for col in range(difficulty * 4):
-    #             deMaze += [value * difficulty * 4]
-    #     return deMaze
     
     def __init__(self,difficulty):
         #difficulty input should be int from 1 to 5
@@ -25,19 +18,9 @@ class Maze:
         self.cellSize = GRIDSIZE
         self.maze = [[0]*self.cols for i in range(self.rows)]
         self.worldMap = {}
-        # self.entrance = None
-        # self.exit = None
         # store the rowIdx and colIdx of entrance/exit as a tuple
         self.entrance = (0, 1) 
         self.exit = (self.rows - 1, self.cols - 2) 
-
-        # # initialize the top and bottom border
-        # for i in range (self.cols):
-        #     self.maze[0][i] = self.maze[self.rows -1][i] = 0
-        # # initialize the left and right border
-        # for j in range(self.rows):
-        #     self.maze[j][0] = self.maze[j][self.cols -1] = 0
-
         
 
     def generate(self):
@@ -67,39 +50,7 @@ class Maze:
         #define entrance and exit as path, 0 is wall, 1 is path 
         self.maze[0][1] = 1
         self.maze[self.rows - 1][self.cols - 2] = 1
-
-    def isWall(self,x,y):
-        if 0 <= x < self.rows and 0 <= y < self.cols:
-            return self.maze[x][y] == 0
-        return False
     
-    def render2D(self):
-        for i in range(self.rows):
-            for j in range(self.cols):
-                if self.maze[i][j] == 1:
-                    drawRect()
-                if (i, j) == self.entrance:
-                    drawRect()
-                if (i, j) == self.exit:
-                    drawRect()
-
-    def __str__(self):
-        return 
-    
-    def __hash__(self):
-        return hash(self._)
-    
-    def __eq__(self, other):
-        return (isinstance(other, Maze) and
-                self._ == other._)
-    
-    def getMap(self):
-        for j, row in enumerate(self.mini_map):
-            for i, value in enumerate(row):
-                if value:
-                    self.worldMap[(i, j)] = value
-
-
 
     def draw(self):
         rows = self.rows
@@ -110,10 +61,10 @@ class Maze:
                 leftTopY = rowIdx * self.cellSize + HEIGHT / 2 - self.rows * self.cellSize / 2
                 if self.entrance == (rowIdx, colIdx):
                     drawLabel("Start", leftTopX + self.cellSize/2, leftTopY + self.cellSize/2, 
-                              fill = 'white', bold = True)
+                              fill = 'white', bold = True, size = 18)
                 elif self.exit == (rowIdx, colIdx):
                     drawLabel("Exit", leftTopX + self.cellSize/2, leftTopY + self.cellSize/2,
-                              fill = 'white', bold = True)
+                              fill = 'white', bold = True, size = 18)
 
                 # 0 is wall, 1 is path 
                 elif self.maze[rowIdx][colIdx] == 0:
@@ -122,18 +73,15 @@ class Maze:
                     drawRect(leftTopX, leftTopY, self.cellSize, self.cellSize, fill = 'grey') 
 
 
-def onAppStart(app):
-    app.width = WIDTH
-    app.height = HEIGHT
-    app.difficulty = 4
-    app.maze = Maze(app.difficulty)
-    # app.player = _
-    # app.map = miniMap
+# def onAppStart(app):
+#     app.width = WIDTH
+#     app.height = HEIGHT
+#     app.difficulty = 4
+#     app.maze = Maze(app.difficulty)
 
-
-def redrawAll(app): 
-    app.maze.generate()
-    app.maze.draw()
+# def redrawAll(app): 
+#     app.maze.generate()
+#     app.maze.draw()
 
 
 # def main():

@@ -7,7 +7,7 @@ from settings import *
 ################################################################################
 
 class Player:
-    level = 0
+    # level = 0
     def __init__(self, maze):
         self.maze = maze
         #initilize player defaut position, maze.entrance only store the index of row and col
@@ -19,7 +19,8 @@ class Player:
         self.angle = initAngle
         self.step = 0.3
         self.legalMove = True
-        self.Win = False 
+        self.win = False 
+        self.score = 100
 
     def moveForward(self): #call this method by keyboard input                       
         newX = self.x + self.step * math.cos(math.radians(self.angle))
@@ -58,17 +59,37 @@ class Player:
 
     
     def youWin(self):
-        (exitX, exitY) = self.maze.exit
-        if self.y >= exitX and self.x >= exitY:
+
+        (exitY, exitX) = self.maze.exit
+        if self.y >= exitY and self.x >= exitX:
             self.win = True
-            level += 1
+            # level += 1
 
-    
-    def Score(self):
-        pass
+    def surroundingWalls(self):
+        countWall = 0
+        if (self.x + 1 < len(self.mazeMap) and self.y + 1 < len(self.mazeMap[0])
+            and self.x - 1 > 0 and self.y - 1 > 0):
+            frontColIdx, frontRowIdx = int(self.x), int(self.y) + 1
+            backColIdx, backRowIdx = int(self.x), int(self.y) - 1
+            leftColIdx, leftRowIdx = int(self.x) - 1, int(self.y)
+            rightColIdx, rightRowIdx = int(self.x) + 1, int(self.y)
 
-       
-    
+            if self.mazeMap[frontRowIdx][frontColIdx] == 0:
+                countWall += 1
+            if self.mazeMap[backRowIdx][backColIdx] == 0:
+                countWall += 1
+            if self.mazeMap[leftRowIdx][leftColIdx] == 0:
+                countWall += 1
+            if self.mazeMap[rightRowIdx][rightColIdx] == 0:
+                countWall += 1
+        return countWall
+
+
+    def calScore(self):
+        countWall = self.surroundingWalls()
+        if countWall >= 3:
+            return -5
+
     def getPosition(self):
         return self.x, self.y
     
@@ -85,6 +106,6 @@ class Player:
         drawCircle(playerX, playerY, 5, fill = 'red')
         ## test draw, show the player angle
         # drawLine(playerX, playerY, playerX + width * math.cos(math.radians(self.angle)), 
-        #          playerY + width * math.sin(math.radians(self.angle)), fill = 'yellow')
+        #          playerY + width * math.sin(math.radians(self.angle)), fill = 'white')
 
     
