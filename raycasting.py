@@ -136,3 +136,4 @@ class RayCasting:
                      fill = rgb(gradColor, gradColor, gradColor))
 
             rayAngle += DANGLE
+
